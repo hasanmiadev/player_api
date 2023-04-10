@@ -12,6 +12,39 @@ app.use(morgan("dev"));
 app.use(express.json());
 const dbLocation = path.resolve("src", "data.json");
 
+app.delete("/:id", async (req, res)=> {
+  const id = req.params.id;
+  const data = await fs.readFile(dbLocation);
+  const oldAllPlayers = JSON.parse(data);
+  const player = oldAllPlayers.find((item) => item.id === id);
+  if (!player) {
+    res.status(404).json({ message: "User Not Found" });
+  }
+  const newPlayers = oldAllPlayers.filter((item)=> item.id !== id) 
+  await fs.writeFile(dbLocation, JSON.stringify(newPlayers));
+  res.status(200).json({message: "Success"})
+})
+
+
+
+app.patch("/:id", async (req, res) => {
+  const id = req.params.id;
+  const data = await fs.readFile(dbLocation);
+  const oldAllPlayers = JSON.parse(data);
+  const player = oldAllPlayers.find((item) => item.id === id);
+
+  if (!player) {
+    res.status(404).json({ message: "User Not Found" });
+  } else {
+    player.name = req.body.name;
+    player.email = req.body.email;
+    player.age = req.body.age;
+  }
+
+  await fs.writeFile(dbLocation, JSON.stringify(oldAllPlayers))
+  res.status(200).json(player)
+});
+
 app.get("/:id", async (req, res) => {
   const id = req.params.id;
   const data = await fs.readFile(dbLocation);
